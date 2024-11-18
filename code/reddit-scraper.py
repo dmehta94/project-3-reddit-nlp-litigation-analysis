@@ -1,6 +1,10 @@
+# Import PRAW to ping the reddit API and handle data
 import praw
+# Import .getenv
+from os import getenv
+
 
 reddit = praw.Reddit(
-    client_id = '3rQpDo3aJ7sxl7_WbpgC0g',
-    client_secret = 'AtkuRNFd1Z1X2f77RmaxJ0c91DcS-Q'
+    client_id = getenv('REDDIT_ID'),
+    client_secret = getenv('REDDIT_PASSWORD')
 )
