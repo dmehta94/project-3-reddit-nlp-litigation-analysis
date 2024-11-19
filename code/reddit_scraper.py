@@ -4,9 +4,10 @@ import pandas as pd
 import praw
 # Import os
 import os
+# Import time to handle rate limit
+import time
 # Import dotenv to load from .env
 from dotenv import load_dotenv
-
 
 # Load variables from .env
 load_dotenv()
@@ -18,27 +19,34 @@ reddit = praw.Reddit(
     user_agent = 'Cybercursor'
 )
 
-# Choose subreddits
-r_dungeons_and_dragons = reddit.subreddit('DungeonsAndDragons')
-r_pathfinder_rpg = reddit.subreddit('Pathfinder_RPG')
+# Function to retrieve the top posts from a timeframe in a subreddit
+def get_top_data(subreddit, time_filter, limit):
+    '''
+    Retrieve the top [limit] posts from [time_filter] in r/[subreddit].
+    Store the following information in a PANDAS DataFrame
+    - Timestamp when the post was created
+    - Title
+    - Post body
+    - Subreddit from which the post was collected
+    '''
+    posts = reddit.subreddit(subreddit).top(time_filter = time_filter, limit = limit)
+    data = []
+    for post in posts:
+        data.append([post.created_utc, post.title, post.selftext, post.subreddit])
+    return pd.DataFrame(data, columns = ['created_utc', 'title', 'self_text', 'subreddit'])
 
-# Pull post data from subreddits
-dnd_posts = r_dungeons_and_dragons.top(time_filter = 'all', limit = 1000)
-pathfinder_posts = r_pathfinder_rpg.top(time_filter = 'all', limit = 1000)
-
-# Write posts to lists of data
-dnd_data = []
-for post in dnd_posts:
-    dnd_data.append([post.created_utc, post.title, post.selftext, post.subreddit])
-
-pathfinder_data = []
-for post in pathfinder_posts:
-    pathfinder_data.append([post.created_utc, post.title, post.selftext, post.subreddit])
-
-# Convert to Pandas DataFrames
-dnd = pd.DataFrame(dnd_data, columns = ['created_utc', 'title', 'self_text', 'subreddit'])
-pathfinder = pd.DataFrame(pathfinder_data, columns = ['created_utc', 'title', 'self_text', 'subreddit'])
-
-# Write data to files
-dnd.to_csv('../data/dnd.csv')
-pathfinder.to_csv('../data/pathfinder.csv')
+# Fucntion to retrieve the newest posts from a timeframe in a subreddit
+def get_new_data(subreddit, limit):
+    '''
+    Retrieve the newest [limit] posts from r/[subreddit].
+    Store the following information in a PANDAS DataFrame
+    - Timestamp when the post was created
+    - Title
+    - Post body
+    - Subreddit from which the post was collected
+    '''
+    posts = reddit.subreddit(subreddit).new(limit = limit)
+    data = []
+    for post in posts:
+        data.append([post.created_utc, post.title, post.selftext, post.subreddit])
+    return pd.DataFrame(data, columns = ['created_utc', 'title', 'self_text', 'subreddit'])
