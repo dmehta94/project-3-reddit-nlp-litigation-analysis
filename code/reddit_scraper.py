@@ -22,7 +22,7 @@ reddit = praw.Reddit(
 # Function to retrieve the top posts from a timeframe in a subreddit
 def get_top_data(subreddit, time_filter, limit):
     '''
-    Retrieve the top [limit] posts from [time_filter] in r/[subreddit].
+    Retrieve the top [limit] posts of [time_filter] from r/[subreddit].
     Store the following information in a PANDAS DataFrame
     - Timestamp when the post was created
     - Title
@@ -50,3 +50,13 @@ def get_new_data(subreddit, limit):
     for post in posts:
         data.append([post.created_utc, post.title, post.selftext, post.subreddit])
     return pd.DataFrame(data, columns = ['created_utc', 'title', 'self_text', 'subreddit'])
+
+def unified_data(subreddit, time_filter, limit_top, limit_new):
+    '''
+    Retrieve the top [limit_top] posts of [time_filter]
+    and the newest [limit_new] posts from r/[subreddit],
+    then concatenate them to the same PANDAS DataFrame
+    to be saved as a .csv file in ../data/.'''
+    top_posts = get_top_data(subreddit, time_filter, limit_top)
+    new_posts = get_new_data(subreddit, limit_new)
+    unified_posts = pd.concat([top_posts, new_posts])
