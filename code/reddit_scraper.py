@@ -62,5 +62,5 @@ def unified_data(subreddit, time_filter, limit_top, limit_new):
     '''
     top_posts = get_top_data(subreddit, time_filter, limit_top)
     new_posts = get_new_data(subreddit, limit_new)
-    unified_posts = pd.concat([top_posts, new_posts], ignore_index = True).drop_duplicates(subset = 'id')
+    unified_posts = pd.concat([top_posts, new_posts]).drop_duplicates(subset = 'id').reset_index(drop = True)
     return unified_posts.to_csv(f'../data/{subreddit}.csv', index = False)
