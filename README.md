@@ -38,7 +38,11 @@ Rather than enumerating the numerous tokens of each document in our corpus, we s
 To conduct our analysis, we concatenate the `title` and `self_text` to create a new `all_text` column, which we tokenized. In addition, we created a binarized version of `subreddit` called `isDnD`, which is an integer representation of whether a post belongs to r/DungeonsAndDragons. This is done to ensure our `LogisticRegression` object will be able to interpret the two categories.
 
 ## Requirements
+### Hardware
+Many of the procedures in the project are parallelized on 12 threads. As such, we recommend that a prospective colleague or student seeking to replicate this work either operate on a machine or server with a CPU that has **at least** 6 cores and 12 threads or modifies the `n_jobs` arguments to a lower number. The latter option will increase the computation time significantly.
 
+### Software
+We employ the following libraries, modules, and functions to run the project.
 | Library | Module | Purpose |
 |---|---|---|
 | `numpy` | | Ease of basic aggregate operations on data. |
@@ -96,7 +100,7 @@ Of the four classes of models we tested, two outperformed the baseline (if only 
 Our baseline logistic regression was able to correctly sort 80% of the testing data. After optimizing the models, the new logistic regression and the random forest classifiers outperformed the baseline slightly, yielding accuracies of 83% each. The k-nearest neighbors and support vector machine classifiers did not bode nearly as well, with each performing below 55% accuracy. Since our models were not able agree on whether the two subreddits are sufficiently distinct, we must concede that the investigation is inconclusive and further analysis is required.
 
 ### Next Steps
-The models were all overfit, despite our attempt to restrict the sheer number of features. Further analysis would attempt to reduce the complexity of the models by further restricting the number of features, increasing the strength of regularization, or perhaps trying some additional, less complex models.
+The models were all overfit, despite our attempt to restrict the sheer number of features. Further analysis would reduce the complexity of the models by further restricting the number of features, increasing the strength of regularization, or fitting less complex models. We could also reduce the scope of our corpus to more verbose documents (those containing body text).
 
 ### Links to Non-Course Sources Consulted
 [GeeksforGeeks' Comprehensive Guide to Classification Models in Sci-Kit Learn](https://www.geeksforgeeks.org/comprehensive-guide-to-classification-models-in-scikit-learn/)
