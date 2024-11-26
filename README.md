@@ -8,14 +8,12 @@
 1) [Overview](#Overview) 
 2) [Data Dictionary](<#Data Dictionary>)
 3) [Requirements](#Requirements)
-4) [Executive Summary](#Executive-Summary)
-    1) [The Data](<#The Deta>)
-    2) [Baseline Values](<#Baseline Values>)
-    3) [Data Transformation](<#Data Transformation>)
-    4) [Model Selection Criteria](<#Model Selection Criteria>)
-    5) [Analysis](#Analysis)
-    6) [Implications](#Implications)
-    7) [Next Steps](#Next-Steps)
+4) [Executive Summary](<#Executive Summary>)
+    1) [Purpose](<#Purpose>)
+    2) [Data handling](<#Data Handling>)
+    3) [Analysis](#Analysis)
+    4) [Findings and Implications](<#Findings and Implications>)
+    5) [Next Steps](#Next-Steps)
 
 ## Overview
 Tabletop Role Playing Games (TTRPGs) experienced a massive popularity boom in the latter half of the 2010s due to the advent of live-streaming in-person games and online gaming communities, which has continued into the present day. Two giants stand atop the high-fantasy TTRPG genre: *Dungeons & Dragons*, maintained by Wizards of the Coast, a division of Hasbro and *Pathfinder*, maintained by Paizo. The two systems are strikingly similar -- so much so that upon its inception in 2009, Pathfinder was dubbed by fans as "D&D 3.75." Among other things, the two systems share relatively similar settings, rules, and character classes. With so much in common, one might wonder from the perspective of a player or game master: are the two truly distinct enough to be considered separate systems? From a more corporate lens, one might frame the question: are Dungeons & Dragons and Pathfinder sufficiently similar that Hasbro should explore the possibility of suing Paizo for infringement?
@@ -66,19 +64,39 @@ To conduct our analysis, we concatenate the `title` and `self_text` to create a 
 | `reddit_scraper` | | Collect the $n$ top (within a timeframe) and $k$ newest posts from a subreddit and write out their id, time of creation, title, text, and subreddit to a `.csv` file. |
 
 ## Executive Summary
-### The Data
+### Purpose
+To determine whether we can make a firm recommendation on exploring an intellectual properties suit, we consider the text data from nearly 2,000 posts on each of r/DungeonsAndDragons and r/Pathfinder_RPG. We employ Natural Language Processing (NLP) techniques to dissect the text data and format it into something our classifiers will accept for analysis.
 
-### Baseline Values
+In total we consider four classes of classification models:
+* Logistic Regression
+* K-Nearest Neighbors
+* Random Forest
+* Support Vector Machines
 
-### Data Transformation
+### Data Handling
+Using the Python Reddit API Wrapper (PRAW), we collect a total of 3,964 posts split nearly evenly between r/DungeonsAndDragons and r/Pathfinder_RPG. Many of the posts lack body text, so we create a new feature which contains all of the title and body text for analysis. This notably has to do with the low verbosity of r/DungeonsAndDragons, where users are more likely to post images and files. r/Pathfinder does have its fair share of posts lack body text, but there are far fewer.
 
-### Model Selection Criteria
+To prepare the data for analysis and the modeling, we:
+* De-duplicate the data within the script `reddit_scraper.py` before writing it out to a `.csv` file
+* Engineer a new `all_text` column which combined the title and body text to effectively deal with null values without losing information or upsetting the balance of our response variable.
+* Consolidate all the data into a single DataFrame
+* Engineer another new feature `isDnD` to binarize the `subreddit` feature
+* Create a copy of a subset of the DataFrame that is tokenized, standardized, and stripped of all punctuation
+* Create another copy of a subset of the DataFrame that is vectorized without frequency weighting
 
 ### Analysis
+Prior to fitting models to the data, we explore the data to see if there is any apparent difference between the posts. We consider the distribution of the posts by log(word count), the general tone of posts via VADER sentiment analysis, and the 20 most frequent (1,3)-grams on the two subreddits. We establish through exploration that there ought to be a sufficient difference between the two communities and TTRPG systems and leave it to our models to confirm. From this analysis, we opt to include the compound sentiment score among our features to which we fit our models.
 
-### Implications
+### Findings and Implications
+Of the four classes of models we tested, two outperformed the baseline (if only just) and two were far outclassed by the baseline. All of our models were fed the same preprocessed data, the pipeline for which was as follows:
+1) Employ TFIDF Vectorization to lemmatize and tokenize, remove all (English) stop words, and consider only those words which appear in at most 0.25% of our corpus.
+2) Convert the output from a sparse matrix to a dense matrix.
+3) Scale the data so that our compound sentiment score is not washed out.
+
+Our baseline logistic regression was able to correctly sort 80% of the testing data. After optimizing the models, the new logistic regression and the random forest classifiers outperformed the baseline slightly, yielding accuracies of 83% each. The k-nearest neighbors and support vector machine classifiers did not bode nearly as well, with each performing below 55% accuracy. Since our models were not able agree on whether the two subreddits are sufficiently distinct, we must concede that the investigation is inconclusive and further analysis is required.
 
 ### Next Steps
+The models were all overfit, despite our attempt to restrict the sheer number of features. Further analysis would attempt to reduce the complexity of the models by further restricting the number of features, increasing the strength of regularization, or perhaps trying some additional, less complex models.
 
 ### Links to Non-Course Sources Consulted
 [GeeksforGeeks' Comprehensive Guide to Classification Models in Sci-Kit Learn](https://www.geeksforgeeks.org/comprehensive-guide-to-classification-models-in-scikit-learn/)
@@ -88,120 +106,3 @@ To conduct our analysis, we concatenate the `title` and `self_text` to create a 
 [Reddit user nullus_72 provides a comprehensive answer about the differences between D&D and Pathfinder for the uninitiated](https://www.reddit.com/r/DnD/comments/11i9vjg/comment/jax4p5x/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
 
 [Conversation with ChatGPT 4o mini about building a transformer that chains TFIDFVectorizer() into StandardScaler()](https://chatgpt.com/share/674401c4-2ad0-800c-b95f-498e594383f9)
-
----
-
-## Rubric
-Your instructors will evaluate your project (for the most part) using the following criteria.  You should make sure that you consider and/or follow most if not all of the considerations/recommendations outlined below **while** working through your project.
-
-For Project 3 the evaluation categories are as follows:<br>
-**The Data Science Process**
-- Problem Statement
-- Data Collection
-- Data Cleaning & EDA
-- Preprocessing & Modeling
-- Evaluation and Conceptual Understanding
-- Conclusion and Recommendations
-
-**Organization and Professionalism**
-- Organization
-- Visualizations
-- Python Syntax and Control Flow
-- Presentation
-
-**Scores will be out of 30 points based on the 10 categories in the rubric.** <br>
-*3 points per section*<br>
-
-| Score | Interpretation |
-| --- | --- |
-| **0** | *Project fails to meet the minimum requirements for this item.* |
-| **1** | *Project meets the minimum requirements for this item, but falls significantly short of portfolio-ready expectations.* |
-| **2** | *Project exceeds the minimum requirements for this item, but falls short of portfolio-ready expectations.* |
-| **3** | *Project meets or exceeds portfolio-ready expectations; demonstrates a thorough understanding of every outlined consideration.* |
-
-
-### The Data Science Process
-
-**Problem Statement**
-- Is it clear what the goal of the project is?
-- What type of model will be developed?
-- How will success be evaluated?
-- Is the scope of the project appropriate?
-- Is it clear who cares about this or why this is important to investigate?
-- Does the student consider the audience and the primary and secondary stakeholders?
-
-**Data Collection**
-- Was enough data gathered to generate a significant result? (At least 1000 posts per subreddit)
-- Was data collected that was useful and relevant to the project?
-- Was data collection and storage optimized through custom functions, pipelines, and/or automation?
-- Was thought given to the server receiving the requests such as considering number of requests per second?
-
-**Data Cleaning and EDA**
-- Are missing values imputed/handled appropriately?
-- Are distributions examined and described?
-- Are outliers identified and addressed?
-- Are appropriate summary statistics provided?
-- Are steps taken during data cleaning and EDA framed appropriately?
-- Does the student address whether or not they are likely to be able to answer their problem statement with the provided data given what they've discovered during EDA?
-
-**Preprocessing and Modeling**
-- Is text data successfully converted to a matrix representation?
-- Are methods such as stop words, stemming, and lemmatization explored?
-- Does the student properly split and/or sample the data for validation/training purposes?
-- Does the student test and evaluate a variety of models to identify a production algorithm (**AT MINIMUM:** two models)?
-- Does the student defend their choice of production model relevant to the data at hand and the problem?
-- Does the student explain how the model works and evaluate its performance successes/downfalls?
-
-**Evaluation and Conceptual Understanding**
-- Does the student accurately identify and explain the baseline score?
-- Does the student select and use metrics relevant to the problem objective?
-- Does the student interpret the results of their model for purposes of inference?
-- Is domain knowledge demonstrated when interpreting results?
-- Does the student provide appropriate interpretation with regards to descriptive and inferential statistics?
-
-**Conclusion and Recommendations**
-- Does the student provide appropriate context to connect individual steps back to the overall project?
-- Is it clear how the final recommendations were reached?
-- Are the conclusions/recommendations clearly stated?
-- Does the conclusion answer the original problem statement?
-- Does the student address how findings of this research can be applied for the benefit of stakeholders?
-- Are future steps to move the project forward identified?
-
-
-### Organization and Professionalism
-
-**Project Organization**
-- Are modules imported correctly (using appropriate aliases)?
-- Are data imported/saved using relative paths?
-- Does the README provide a good executive summary of the project?
-- Is markdown formatting used appropriately to structure notebooks?
-- Are there an appropriate amount of comments to support the code?
-- Are files & directories organized correctly?
-- Are there unnecessary files included?
-- Do files and directories have well-structured, appropriate, consistent names?
-
-**Visualizations**
-- Are sufficient visualizations provided?
-- Do plots accurately demonstrate valid relationships?
-- Are plots labeled properly?
-- Are plots interpreted appropriately?
-- Are plots formatted and scaled appropriately for inclusion in a notebook-based technical report?
-
-**Python Syntax and Control Flow**
-- Is care taken to write human readable code?
-- Is the code syntactically correct (no runtime errors)?
-- Does the code generate desired results (logically correct)?
-- Does the code follows general best practices and style guidelines?
-- Are Pandas functions used appropriately?
-- Are `sklearn` and `NLTK` methods used appropriately?
-
-**Presentation**
-- Is the problem statement clearly presented?
-- Does a strong narrative run through the presentation building toward a final conclusion?
-- Are the conclusions/recommendations clearly stated?
-- Is the level of technicality appropriate for the intended audience?
-- Is the student substantially over or under time?
-- Does the student appropriately pace their presentation?
-- Does the student deliver their message with clarity and volume?
-- Are appropriate visualizations generated for the intended audience?
-- Are visualizations necessary and useful for supporting conclusions/explaining findings?
