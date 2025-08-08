@@ -9,8 +9,17 @@ import time
 # Import dotenv to load from .env
 from dotenv import load_dotenv
 
-# Load variables from .env
-load_dotenv()
+# Get current directory and load .env
+current_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(current_dir, '.env')
+
+# Debug: Check if .env file exists
+print(f"Looking for .env at: {env_path}")
+print(f".env file exists: {os.path.exists(env_path)}")
+
+# Load the .env file
+load_result = load_dotenv(env_path)
+print(f"load_dotenv() result: {load_result}")
 
 # Initialize PRAW
 reddit = praw.Reddit(

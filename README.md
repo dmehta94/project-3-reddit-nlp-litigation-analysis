@@ -67,6 +67,8 @@ We employ the following libraries, modules, and functions to run the project.
 | `praw` | | The Python Reddit API Wrapper. Imported as a fail-safe, in case data collection goes wrong. |
 | `reddit_scraper` | | Collect the $n$ top (within a timeframe) and $k$ newest posts from a subreddit and write out their id, time of creation, title, text, and subreddit to a `.csv` file. |
 
+The file `reddit_scraper.py` requires an existing `.env` file in the working directory of the project from which to retrieve the API Key and password. For security, this has been omitted from the repository, so a prospective user will have to initialize their own `.env` file with their own API key and password for Reddit.
+
 ## Executive Summary
 ### Purpose
 To determine whether we can make a firm recommendation on exploring an intellectual properties suit, we consider the text data from nearly 2,000 posts on each of r/DungeonsAndDragons and r/Pathfinder_RPG. We employ Natural Language Processing (NLP) techniques to dissect the text data and format it into something our classifiers will accept for analysis.
